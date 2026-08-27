@@ -1,0 +1,124 @@
+- OR (Inclusive Or): Returns 1 (True) if any input is 1. If A is true or B is true (or both),
+
+the result is true.Analogy: "For dessert, you can have cake or ice cream." (You can have both).
+
+-XOR (Exclusive Or): Returns 1 (True) only if the inputs are different. 
+If both inputs are the same (both 0 or both 1), XOR returns 0 (False).
+
+______________________________________________________________________________________________
+
+must convert all to int then do  XOR for them  
+
+_______________________
+there is a diff between recvuntil() → stops at a marker , recvline() → reads the rest of the line
+
+____________________
+strxor do xor but on bytes not string, must add b before string. what that mean b"AAA" in python that means bytes object not binary 
+and it in pycryptodome lib 
+
+_____________________________
+AES work on block cipher ,just encrypt one block from the oraginal text this block size = 16 bytes (128 bit) each time 
+but if the text was smallest than 16 bytes then it add pandding to be 16 bytes 
+
+____________________
+when you encrypt all block with the same key then in future when  i encrypt any plaintext and know his ct then 
+i will compare it with all you block to know the plaintext of it this attack called  AES-ECB-CPA in ECB encrypt the with the same key
+and that's make an issue 'cause if the massege contain the same block we will see the same result Same plaintext = Same ciphertext
+
+_______________
+padding happen first on your plaintext then plaintext+padding  goes to encrypt 
+_____________
+
+what is CBC --> cihper block chaining , that mean  each block we'll use it to encrypt the next block and the same next next block
+we'll use it to encrypt more, more. but what about the first block how we will encrypt it ? in the case CBC will intialize random blcok called
+Initialization Vector(IV) , but also in ECB we can encrypt the last block in the massege but here in CBC must encrypt the hole massege
+each block depends on the prevouis block, so why this strong? becaus if you change one character just one charcter the hole block will 
+change and the will effect the next blocks. in ECB Same plaintext = Same ciphertext
+the IV not secret it send with the massege but it random each time its chainge even if i send the same massege 100 times
+C[i-1] XOR Decrypt(C[i]) = P[i]
+
+C1 = Encrypt(P1 XOR IV)
+C2 = Encrypt(P2 XOR C1)
+C3 = Encrypt(P3 XOR C2)
+
+Decrypt(Encrypt(X)) = X
+Decrypt(C2) = Decrypt(Encrypt(P2 XOR C1)) = P2 XOR C1
+
+Decrypt(c2) = P2 XOR C1
+P2 = Decrypt(C2) XOR C1
+
+-modifiying iv succeeds 'cause its effect linear via XOR outside the decryption func ,but c1 if you modify it the change when it go into decryption func and will be Garbage
+_____________________
+unpading happen  on the plaintext to remove the padding that added before
+____________
+padding oracle attack 
+
+decrypt(c1)=p1 ^ iv
+if i wanna p1=decrypt(c1) ^ iv
+but how it work decrypt(c1) with key then give D1 then do D1 ^ iv that gives my p1
+ p1= D1 ^ iv 
+so now it will do XOR byte byte until go to the last byte ,here my work will start i will change the last byte but why ?
+if i change the last-byte , when unpad() func work on p1 after changing it make error it last byte not represent how many filed it padding
+but if no error so that mean i put the original byte'padding'  we do all that to own 2 var in the equation to find the real D1 NOte: D1 not changing all the time,
+so now we have p`1 ,iv` and from that  i can find the original D1 
+after find the original D1 use it to find the original p1
+ p1=D1 ^ iv
+_____________
+this is wonderful, we alos can encrypt any massege even if we don't kow the key 
+in block cipher decryption AES ---> input1:c (ciphertext) +input2:key-in-server = output: the value of D1 'i1' intermediate
+What Happens Inside the Server After Sending the Forged Payload?
+  Payload Sent: [IV_crafted] + [C1]
+  
+  Step 1 (Block Decryption): Server takes C1, decrypts it, and produces the 
+                             exact same hidden I1 block we leaked.
+  Step 2 (The Final XOR):    Server XORs I1 with our IV_crafted:
+                             Plaintext = I1 ^ IV_crafted
+                             Plaintext = I1 ^ (I1 ^ Target_Plaintext)
+                             Plaintext = Target_Plaintext (The I1 cancels out!)
+  Step 3 (Unpadding):        The server's unpad() function automatically strips 
+                             the PKCS#7 padding bytes from the end of the block.
+  Step 4 (Command Execution):The clean string (e.g., "sleep" or the flag request) 
+                             is passed to the if/elif conditions. The server 
+                             matches the command and triggers the victory output.
+____________________
+
+
+what is DHKE: diffie-hellman key exchange --> cryptograhpic protocol that allow 2 parties to securely establish a shared secret over an insecure public channel
+
+How it works : 
+    1- Agree on Public Numbers: Alice & Bob agree on a large prime number (P) and base generator (G)
+    2- Choose Private Secrets: Alice chooses a secret private number a, and Bob chooses a secret private number b. They keep these strictly to themselves.
+    3-Calculate Public Keys: 
+        Alice computes her public key: A = G^a (mod p) 
+        Bob computes his public key:   B = G^b (mod P)
+        
+    4- Exchange the public keys [A, B, G, P]
+    
+    5- calc the secret key 
+        Alice --> K=B^a mod p
+        Bob   --> K=A^a mod p
+___________________
+
+
+
+RSA: it's create public-key(n,e) , private-key(n,d)
+
+The steps:
+
+    1- choose 2 big prime numbers (q,p)
+    2- calc n for them n=q*p
+    3- find phi(n) 
+        phi(n)=(p-1)*(q-1)
+    4- choose e must be smaller than phi(n) and the default of e=65537
+    5- calc d  d=e^-1 mod phi(n)
+
+- C= m^e mod n
+- M= c^d mod n
+
+
+EX: m=2 , d=7 , e=3 , n=33 , c=???
+C=m^e mod n
+C=2^3 mod 33
+C=8
+
+_________________
